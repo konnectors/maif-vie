@@ -1,0 +1,41 @@
+language: node_js
+node_js:
+- '12'
+env:
+  global:
+  - MATTERMOST_CHANNEL=publication
+  # REGISTRY_TOKEN(editor=cozy, app=maif-vie, space=maif_epa_custom)
+  - secure: vFZRP5MifJ4ASFXaINMa+3uDYdEUCG35zmmayLFIgsKU1cL/FQB18AsMdiivYXHZUJ2VKucBNPw3fFzzzlN2He0noaB7uC9Cz095Amc6idcIbi8ZQXH4lM6+Wzk4tsHczywhdRL1kA1qV+BJhFEm5Xn10xUuqV3JW4Q0j2qXlO96ZoLePpOMTuKHse4e4NIZOYHHVxGwX6h5upEl2D6Cc5ZWeZo5VgUMMwegExjLiTV4SLhZ2bHCKJYn2ZJk5Pp65zwjrCZ3qnKDc/fJVlLAhflKRN/ul5WXxEtjyqVQrBQvX441XYxu0Oe0sP6RdydkGwce0Iywok3y2eSTUu6ULrJonDjI+34KhCdgCz/WMAH0FzHgSxyIjabtJFhJphQ3xvwN1o2l1JOK0KpYPttvelhjSEVid0qbMloKejHcT91AfXT1UwcbUMZtrDHakVqJmJBVyLYaThsHxVF1yHiHG9AyNUyzl6cR5Yf+d8EvUuSGRrPMMEd0CFBKw0tNgl/45/NEP3UYaTFPJo05sQS1bHa8pjNcSb70u4jKG7w3BeaPFf2B7WeONY9494Cg+gvqf9uBoWlVQrk5pYwvGlM2EXqhq2swI0V2T2DMW8bTPAGPTEAb/PrkYURXHovSe64NB37UGiXwQNpIp1mi2Mzs/H2ajDCuu3Qz4afmR9UJjyo=
+  # MATTERMOST_HOOK_URL
+  - secure: 9All/4ZaE01mssjUKWmuxHNs+up1FyHfQTFZf0hB6LzKYUB2soJxKkDF5o+sLAjzmADQXcKT9t3TNl07TBLMXuGDD8++BnEb02lbRVWY+Fj5iAlu605DNBLz/4EdCzydaFxtiVUhwfn53YoFcgBOkqLsC1qG4xwq/Tm6d76T+H0C/jpmRhOy2l/ySrd98Tsoe4kcOC8vyq022w4LAXnRyV0KJUGI8qPXlRqmmDtoJjU0fqlUpI1eJCVH8RMcuXeFKg5C3asXs4ylyDms2FadlHac68Ozs9PNUtWhzFDKDUWubEj5GTq4zPzUaFE60RhdY05Nu+9acSq/eYR5N0O5KdqKYfU8izXvOh2neCuCEtUSJ5c9bR0vss6P+f+RBiGI27qWw4+1ewnQHd8hMJo1Kyen/48FHzDipnAV12We2OEO1wrpN+vOwoLhAtyADZBQ6hlq8q8usBVrMAoKP34vvxklFNM9MDnQE7qrnEbQkm35oiFq3TqctzfL4P1yVr1WD9Jketmb/GhA/ZnWhnFSO5cAz6lzBPTeDF4fiSNYHXxrGrG/lrpNoLx6XGXqn7nkUTQ3tuDFMGQHEKQXv0rZpw/rK5m23xsocFJXVvnMPYZzBu3zG1M/SqYw0CRbFWpFT5eof2Hq+s1neCkQCTVeldqYmZa1N5flgqotjIM8Ve0=
+cache:
+  yarn: true
+  directories:
+  - node_modules
+branches:
+  except:
+  - build
+  - build-debug
+script:
+- yarn lint
+- yarn build
+deploy:
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish --space maif_epa_custom
+  on:
+    branch: master
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish --space maif_epa_custom
+  on:
+    tags: true
+before_install:
+- openssl aes-256-cbc -K $encrypted_8ebb1ef83f64_key -iv $encrypted_8ebb1ef83f64_iv
+  -in github_deploy_key.enc -out /tmp/github_deploy_key -d
+- eval "$(ssh-agent -s)"
+- chmod 600 /tmp/github_deploy_key
+- ssh-add /tmp/github_deploy_key
+after_deploy:
+- rm /tmp/github_deploy_key
+- ssh-add -D

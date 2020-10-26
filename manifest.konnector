@@ -1,0 +1,59 @@
+{
+  "version": "0.0.1",
+  "name": "Maif Vie",
+  "type": "konnector",
+  "language": "node",
+  "icon": "icon.png",
+  "slug": "maif-vie",
+  "source": "git@github.com:konnectors/maif-vie.git",
+  "editor": "Cozy",
+  "vendor_link": "https://www.maif.fr",
+  "categories": ["others"],
+  "fields": {},
+  "screenshots": [],
+  "folders": [
+    {
+      "defaultDir": "$administrative/$konnector/$account"
+    }
+  ],
+  "permissions": {
+    "files": {
+      "type": "io.cozy.files"
+    },
+    "accounts": {
+      "type": "io.cozy.accounts"
+    }
+  },
+  "developer": {
+    "name": "Cozy Cloud",
+    "url": "https://cozy.io"
+  },
+  "langs": ["fr", "en"],
+  "locales": {
+    "fr": {
+      "short_description": "Récupère vos données maif vie",
+      "long_description": "Récupère vos données maif vie",
+      "permissions": {
+        "files": {
+          "description": "Utilisé pour sauvegarder les relevés"
+        },
+        "accounts": {
+          "description": "Utilisé pour obtenir les données du compte"
+        }
+      }
+    },
+    "en": {
+      "short_description": "Fetch your maif vie data",
+      "long_description": "Fetch your maif vie data",
+      "permissions": {
+        "files": {
+          "description": "Required to save the bills"
+        },
+        "accounts": {
+          "description": "Required to get the account's data"
+        }
+      }
+    }
+  },
+  "manifest_version": "2"
+}
