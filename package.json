@@ -1,10 +1,10 @@
 {
-  "name": "cozy-konnector-template",
-  "version": "1.0.0",
+  "name": "cozy-konnector-maif-vie",
+  "version": "0.0.1",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git@github.com:konnectors/template.git"
+    "url": "git@github.com:konnectors/maif-vie.git"
   },
   "keywords": [],
   "author": "Cozy Cloud",
@@ -37,12 +37,12 @@
     "travisDeployKey": "./bin/generate_travis_deploy_key"
   },
   "dependencies": {
-    "cozy-konnector-libs": "4.34.5"
+    "cozy-konnector-libs": "4.35.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "6.2.1",
     "cozy-app-publish": "0.25.0",
-    "cozy-jobs-cli": "1.13.6",
+    "cozy-jobs-cli": "1.13.7",
     "eslint-config-cozy-app": "2.0.0",
     "git-directory-deploy": "1.5.1",
     "husky": "4.3.0",
