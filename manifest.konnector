@@ -8,7 +8,9 @@
   "source": "git@github.com:konnectors/maif-vie.git",
   "editor": "Cozy",
   "vendor_link": "https://www.maif.fr",
-  "categories": ["others"],
+  "categories": [
+    "insurance"
+  ],
   "fields": {},
   "screenshots": [],
   "folders": [
@@ -16,12 +18,18 @@
       "defaultDir": "$administrative/$konnector/$account"
     }
   ],
+  "data_types": [
+    "bill"
+  ],
   "permissions": {
     "files": {
       "type": "io.cozy.files"
     },
     "accounts": {
       "type": "io.cozy.accounts"
+    },
+    "events": {
+      "type": "fr.maif.events"
     }
   },
   "developer": {
@@ -39,6 +47,9 @@
         },
         "accounts": {
           "description": "Utilisé pour obtenir les données du compte"
+        },
+        "events": {
+          "description": "Pour pouvoir vous donner des informations en temps réel"
         }
       }
     },
@@ -51,9 +62,16 @@
         },
         "accounts": {
           "description": "Required to get the account's data"
+        },
+        "events": {
+          "description": "Required to to give you real time information"
         }
       }
     }
   },
+  "banksTransactionRegExp": "\\bmaif\\b",
+  "features": [
+    "METADATA_DEDUP"
+  ],
   "manifest_version": "2"
 }
