@@ -19,14 +19,14 @@ const baseUrlDataCollect =
 module.exports = new BaseKonnector(start)
 
 async function start(fields, cozyParameters) {
-  const { id, secret } = cozyParameters.secret
+  const { dataCollectApiKey, maifVieApiKey } = cozyParameters.secret
 
   const requestDataCollect = requestFactory({
     cheerio: false,
     json: true,
     auth: {
-      user: id,
-      pass: secret
+      user: 'epa-apikey',
+      pass: dataCollectApiKey
     }
     // debug: true,
   })
@@ -36,58 +36,83 @@ async function start(fields, cozyParameters) {
   let person
   try {
     person = await requestDataCollect.get(
-      `${baseUrlDataCollect}/persons/${slug}`
+      `${baseUrlDataCollect}/persons/${slug}?mock=false`
     )
   } catch (err) {
     log('error', err.message)
     throw new Error(errors.LOGIN_FAILED)
   }
 
-  const { identifiantMaifVie } = person
-  const { apikey } = cozyParameters.secret
+  const { identifiant } = person
   let requestMaifVie = requestFactory({
     // debug: true,
     cheerio: false,
     json: true,
     headers: {
-      'x-api-key': apikey
+      'x-api-key': maifVieApiKey
     }
   })
+  const requestOther = require('request')
 
   const contrats = await requestMaifVie.get(baseUrl, {
-    qs: { identifiantMaifVie }
+    qs: { identifiantPersonne: identifiant }
   })
 
-  let nbFetchedFile = 0
+  if (
+    contrats &&
+    contrats.personnesPartenaires &&
+    contrats.personnesPartenaires.length === 0
+  ) {
+    log('warn', 'No maif vie contract found')
+  } else if (!contrats) {
+    throw new Error('VENDOR_DOWN')
+  }
+
+  let fetchedFilesList = []
   for (const partenaire of contrats.personnesPartenaires) {
     for (const contratVie of partenaire.contratsVie) {
       if (contratVie.lettreCleContratVie && contratVie.numeroContratVie)
         await this.saveFiles(
           [
             {
-              filename: `${contratVie.lettreCleContratVie}${contratVie.numeroContratVie}.pdf`,
+              filename: `Releve_annuel_${moment().format('YYYY')}_${
+                contratVie.lettreCleContratVie
+              }${contratVie.numeroContratVie}.pdf`,
               fileurl: `${baseUrl}/${contratVie.lettreCleContratVie}${contratVie.numeroContratVie}/releves_annuels?identifiantAdherent=${partenaire.referenceClient}`,
               fetchFile: entry => {
-                nbFetchedFile++
-                return requestMaifVie(entry.fileurl)
+                fetchedFilesList.push(
+                  `${contratVie.lettreCleContratVie}${contratVie.numeroContratVie}`
+                )
+                return requestOther(entry.fileurl, {
+                  headers: {
+                    'x-api-key': maifVieApiKey
+                  }
+                })
               }
             }
           ],
-          fields
+          fields,
+          {
+            requestInstance: requestMaifVie,
+            fileIdAttributes: ['fileurl'],
+            sourceAccountIdentifier: slug
+          }
         )
     }
   }
 
-  if (nbFetchedFile > 0) {
+  for (const numContrat of fetchedFilesList) {
     await this.updateOrCreate(
       [
         {
+          personId: identifiant,
+          cardId: numContrat,
           type: 'releve',
           tags: ['nouveau releve'],
-          title: `Vous avez un nouveau relevé`,
-          content: `Vous avez un nouveau relevé pour l'année ${moment().format(
+          title: `Vous avez un nouveau relevé annuel`,
+          content: `Vous avez un nouveau relevé annuel pour l'année ${moment().format(
             'YYYY'
-          )}`,
+          )} et pour le contrat ${numContrat}`,
           metadata: [
             {
               label: 'pushnotif',
@@ -96,7 +121,8 @@ async function start(fields, cozyParameters) {
           ]
         }
       ],
-      'fr.maif.events'
+      'fr.maif.events',
+      ['cardId', 'personId']
     )
   }
 }
@@ -108,7 +134,8 @@ function getSlugFromDomain() {
     throw new Error(errors.VENDOR_DOWN)
   }
 
-  const slug = matching[1]
+  let slug = matching[1]
+  slug = slug.substr(0, 3) + slug.substr(3).toUpperCase()
   log('info', `Found slug ${slug}`)
   return slug
 }
