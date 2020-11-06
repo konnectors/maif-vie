@@ -8,11 +8,13 @@ const {
   errors,
   log
 } = require('cozy-konnector-libs')
+const moment = require('moment')
 
 const baseUrl =
   'https://cloud.api.maif.fr/build-cozy/vieprevoyance/contrats/v2/contrats_detenus'
 
-const baseUrlDataCollect = 'https://epaapi.preprod.opunmaif.fr/api/data-collect'
+const baseUrlDataCollect =
+  'http://build-epa-maif.francecentral.cloudapp.azure.com/api/data-collect'
 
 module.exports = new BaseKonnector(start)
 
@@ -56,6 +58,7 @@ async function start(fields, cozyParameters) {
     qs: { identifiantMaifVie }
   })
 
+  let nbFetchedFile = 0
   for (const partenaire of contrats.personnesPartenaires) {
     for (const contratVie of partenaire.contratsVie) {
       if (contratVie.lettreCleContratVie && contratVie.numeroContratVie)
@@ -63,13 +66,38 @@ async function start(fields, cozyParameters) {
           [
             {
               filename: `${contratVie.lettreCleContratVie}${contratVie.numeroContratVie}.pdf`,
-              fileurl: `${baseUrl}/${contratVie.lettreCleContratVie}${contratVie.numeroContratVie}/releves_annuels?identifiantAdherent=${partenaire.referenceClient}`
+              fileurl: `${baseUrl}/${contratVie.lettreCleContratVie}${contratVie.numeroContratVie}/releves_annuels?identifiantAdherent=${partenaire.referenceClient}`,
+              fetchFile: entry => {
+                nbFetchedFile++
+                return requestMaifVie(entry.fileurl)
+              }
             }
           ],
-          fields,
-          { requestInstance: requestMaifVie }
+          fields
         )
     }
+  }
+
+  if (nbFetchedFile > 0) {
+    await this.updateOrCreate(
+      [
+        {
+          type: 'releve',
+          tags: ['nouveau releve'],
+          title: `Vous avez un nouveau relevé`,
+          content: `Vous avez un nouveau relevé pour l'année ${moment().format(
+            'YYYY'
+          )}`,
+          metadata: [
+            {
+              label: 'pushnotif',
+              value: 'true'
+            }
+          ]
+        }
+      ],
+      'fr.maif.events'
+    )
   }
 }
 
