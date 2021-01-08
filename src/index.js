@@ -13,8 +13,7 @@ const moment = require('moment')
 const baseUrl =
   'https://cloud.api.maif.fr/build-cozy/vieprevoyance/contrats/v2/contrats_detenus'
 
-const baseUrlDataCollect =
-  'http://build-epa-maif.francecentral.cloudapp.azure.com/api/data-collect'
+const baseUrlDataCollect = 'https://dev.epa.maif.fr/api/data-collect'
 
 module.exports = new BaseKonnector(start)
 
