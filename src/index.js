@@ -23,8 +23,9 @@ const domainBaseUrlMap = {
 
 async function start(fields, cozyParameters) {
   const { dataCollectApiKey, maifVieApiKey } = cozyParameters.secret
+  const { id, secret } = fields
 
-  const requestDataCollect = requestFactory({
+  const requestOptions = {
     cheerio: false,
     json: true,
     auth: {
@@ -32,7 +33,18 @@ async function start(fields, cozyParameters) {
       pass: dataCollectApiKey
     }
     // debug: true,
-  })
+  }
+
+  if (id && secret) {
+    Object.assign(requestOptions, {
+      headers: {
+        'Epa-Auth-Id': id,
+        'Epa-Auth-Secret': secret
+      }
+    })
+  }
+
+  const requestDataCollect = requestFactory(requestOptions)
 
   const { slug, domain } = parseUrl(process.env.COZY_URL)
 
