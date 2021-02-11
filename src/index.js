@@ -15,14 +15,12 @@ const baseUrl =
 
 module.exports = new BaseKonnector(start)
 
-const domainBaseUrlMap = {
-  'cozy-maif-int.fr': 'https://dev.epa.maif.fr',
-  'cozy-maif-stg.fr': 'https://preprod.epa.maif.fr',
-  'mycozy.eu': 'https://epa.maif.fr'
-}
-
 async function start(fields, cozyParameters) {
-  const { dataCollectApiKey, maifVieApiKey } = cozyParameters.secret
+  const {
+    dataCollectApiKey,
+    maifVieApiKey,
+    dataCollectApiUrl
+  } = cozyParameters.secret
   const { id, secret } = fields
 
   const requestOptions = {
@@ -46,14 +44,9 @@ async function start(fields, cozyParameters) {
 
   const requestDataCollect = requestFactory(requestOptions)
 
-  const { slug, domain } = parseUrl(process.env.COZY_URL)
+  const { slug } = parseUrl(process.env.COZY_URL)
 
-  if (!domainBaseUrlMap[domain]) {
-    log('error', `no api url corresponding to ${domain}`)
-    throw new Error(errors.VENDOR_DOWN)
-  }
-
-  const baseUrlDataCollect = domainBaseUrlMap[domain] + '/api/data-collect'
+  const baseUrlDataCollect = dataCollectApiUrl + '/api/data-collect'
 
   let person
   try {
@@ -159,6 +152,5 @@ function parseUrl(url) {
   const slug = matching[1]
   log('info', `Found slug ${slug}`)
 
-  const domain = matching[2] + '.' + matching[3]
-  return { slug, domain }
+  return { slug }
 }
