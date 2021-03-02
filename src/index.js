@@ -69,9 +69,15 @@ async function start(fields, cozyParameters) {
   })
   const requestOther = require('request')
 
-  const contrats = await requestMaifVie.get(baseUrl, {
-    qs: { identifiantPersonne: identifiant }
-  })
+  let contrats
+  try {
+    contrats = await requestMaifVie.get(baseUrl, {
+      qs: { identifiantPersonne: identifiant }
+    })
+  } catch (err) {
+    log('error', err.message)
+    throw new Error('VENDOR_DOWN.MAIF_VIE_REQUEST_FAILED')
+  }
 
   if (
     contrats &&
