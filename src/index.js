@@ -54,8 +54,17 @@ async function start(fields, cozyParameters) {
       `${baseUrlDataCollect}/persons/${slug}`
     )
   } catch (err) {
-    log('error', err.message)
-    throw new Error(errors.LOGIN_FAILED)
+    if (err.statusCode === 401) {
+      log('error', '401: ' + err.message)
+      throw new Error(errors.LOGIN_FAILED)
+    } else if (err.statusCode === 404) {
+      log('warn', '404: ' + err.message)
+      log('warn', 'Found no person')
+      throw new Error(errors.LOGIN_FAILED.NO_PERSON)
+    } else {
+      log('error', err.statusCode + ': ' + err.message)
+      throw new Error(errors.VENDOR_DOWN)
+    }
   }
 
   const { identifiant } = person
